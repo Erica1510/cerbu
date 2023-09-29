@@ -7,35 +7,83 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class ElGamal {
-    private static final int BIT_LENGTH = 128; // Changed bit length to 128 for stronger encryption
+
+    private static final int BIT_LENGTH = 64;
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        BigInteger p, alpha, y, secretKey;
         Random secureRandom = new SecureRandom();
 
-        BigInteger p, alpha, y, secretKey;
+        // Generate keys
+        KeyPair keys = generateKeys(secureRandom);
+        p = keys.getP();
+        alpha = keys.getAlpha();
+        y = keys.getY();
+        secretKey = keys.getSecretKey();
 
-        // Public and private key calculation
-        p = BigInteger.probablePrime(BIT_LENGTH, secureRandom);
-        alpha = primitiveRootOf(p);
-        secretKey = getCoprimeNumber(p, secureRandom);  // Corrected line
-        y = alpha.modPow(secretKey, p);
-
+        // Display keys
         displayKeys(p, alpha, y, secretKey);
 
         // Encryption
-        char message = getInputCharacter(scanner);
-        BigInteger messageInInteger = BigInteger.valueOf(message);
-        BigInteger[] encrypted = encrypt(p, alpha, y, messageInInteger, secureRandom);
+        char message = getInputCharacter(new Scanner(System.in));
+        BigInteger messageAsInt = BigInteger.valueOf(message);
+        EncryptedData encryptedData = encryptMessage(p, alpha, y, messageAsInt, secureRandom);
 
         // Decryption
-        BigInteger decrypted = decrypt(p, secretKey, encrypted);
-        displayDecrypted(decrypted);
+        BigInteger decrypted = decryptMessage(p, secretKey, encryptedData);
+        displayDecryptionResult(decrypted);
     }
 
-    private static char getInputCharacter(Scanner scanner) {
-        System.out.print("\nEnter a char -->  ");
-        return scanner.next().charAt(0);
+    private static class KeyPair {
+        private final BigInteger p, alpha, y, secretKey;
+
+        public KeyPair(BigInteger p, BigInteger alpha, BigInteger y, BigInteger secretKey) {
+            this.p = p;
+            this.alpha = alpha;
+            this.y = y;
+            this.secretKey = secretKey;
+        }
+
+        public BigInteger getP() {
+            return p;
+        }
+
+        public BigInteger getAlpha() {
+            return alpha;
+        }
+
+        public BigInteger getY() {
+            return y;
+        }
+
+        public BigInteger getSecretKey() {
+            return secretKey;
+        }
+    }
+
+    private static class EncryptedData {
+        private final BigInteger a, b;
+
+        public EncryptedData(BigInteger a, BigInteger b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        public BigInteger getA() {
+            return a;
+        }
+
+        public BigInteger getB() {
+            return b;
+        }
+    }
+
+    private static KeyPair generateKeys(Random secureRandom) {
+        BigInteger p = BigInteger.probablePrime(BIT_LENGTH, secureRandom);
+        BigInteger alpha = findPrimitiveRootOf(p);
+        BigInteger secretKey = getCoprimeNumber(p, secureRandom);
+        BigInteger y = alpha.modPow(secretKey, p);
+        return new KeyPair(p, alpha, y, secretKey);
     }
 
     private static void displayKeys(BigInteger p, BigInteger alpha, BigInteger y, BigInteger secretKey) {
@@ -45,38 +93,41 @@ public class ElGamal {
         System.out.println("Private key:\nsecretKey = " + secretKey);
     }
 
-    private static BigInteger[] encrypt(BigInteger p, BigInteger alpha, BigInteger y,
-                                        BigInteger messageInInteger, Random secureRandom) {
-        BigInteger k = getNumberTill(p.subtract(BigInteger.ONE), secureRandom);
-        BigInteger b = messageInInteger.multiply(y.modPow(k, p)).mod(p);
-        BigInteger a = alpha.modPow(k, p);
-        displayEncrypted(messageInInteger, k, a, b);
-        return new BigInteger[]{a, b};
+    private static char getInputCharacter(Scanner scanner) {
+        System.out.print("\nEnter a char -->  ");
+        return scanner.next().charAt(0);
     }
 
-    private static void displayEncrypted(BigInteger messageInInteger, BigInteger k, BigInteger a, BigInteger b) {
+    private static EncryptedData encryptMessage(BigInteger p, BigInteger alpha, BigInteger y, BigInteger messageInInteger, Random secureRandom) {
+        BigInteger k = getRandomNumberBelow(p.subtract(BigInteger.ONE), secureRandom);
+        BigInteger b = messageInInteger.multiply(y.modPow(k, p)).mod(p);
+        BigInteger a = alpha.modPow(k, p);
+        displayEncryptionDetails(messageInInteger, k, a, b);
+        return new EncryptedData(a, b);
+    }
+
+    private static void displayEncryptionDetails(BigInteger messageInInteger, BigInteger k, BigInteger a, BigInteger b) {
         System.out.println("Plaintext = " + messageInInteger);
         System.out.println("k = " + k);
         System.out.println("a = " + a);
         System.out.println("b = " + b);
     }
 
-    private static BigInteger decrypt(BigInteger p, BigInteger secretKey, BigInteger[] encrypted) {
-        BigInteger a = encrypted[0];
-        BigInteger b = encrypted[1];
-        return a.modPow(secretKey, p).modInverse(p).multiply(b).mod(p);
+    private static BigInteger decryptMessage(BigInteger p, BigInteger secretKey, EncryptedData encryptedData) {
+        BigInteger a = encryptedData.getA();
+        BigInteger b = encryptedData.getB();
+        return b.multiply(a.modPow(secretKey, p).modInverse(p)).mod(p);
     }
 
-    private static void displayDecrypted(BigInteger decrypted) {
+    private static void displayDecryptionResult(BigInteger decrypted) {
         System.out.println("Decrypted: " + decrypted + "\nChar: " + (char) decrypted.intValue());
     }
 
-    private static BigInteger getNumberTill(BigInteger upperLimit, Random secureRandom) {
+    private static BigInteger getRandomNumberBelow(BigInteger upperLimit, Random secureRandom) {
         BigInteger randomNumber;
         do {
             randomNumber = new BigInteger(upperLimit.bitLength(), secureRandom);
         } while (randomNumber.compareTo(upperLimit) >= 0);
-
         return randomNumber;
     }
 
@@ -85,20 +136,44 @@ public class ElGamal {
         do {
             coprime = new BigInteger(number.bitLength(), secureRandom);
         } while (!coprime.gcd(number).equals(BigInteger.ONE) || coprime.compareTo(number) >= 0);
-
         return coprime;
     }
 
-    // Utility function to store prime factors of a number
+    private static BigInteger findPrimitiveRootOf(BigInteger number) {
+        HashSet<BigInteger> s = new HashSet<>();
+
+        if (!number.isProbablePrime(100)) {
+            return BigInteger.valueOf(-1);
+        }
+
+        BigInteger phi = number.subtract(BigInteger.ONE);
+        findPrimeFactors(s, phi);
+
+        for (BigInteger r = BigInteger.TWO; r.compareTo(phi) <= 0; r = r.add(BigInteger.ONE)) {
+            if (isPrimitiveRoot(s, phi, number, r)) {
+                return r;
+            }
+        }
+
+        return BigInteger.valueOf(-1);
+    }
+
+    private static boolean isPrimitiveRoot(HashSet<BigInteger> s, BigInteger phi, BigInteger number, BigInteger r) {
+        for (BigInteger a : s) {
+            if (r.modPow(phi.divide(a), number).equals(BigInteger.ONE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void findPrimeFactors(HashSet<BigInteger> s, BigInteger n) {
         while (n.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
             s.add(BigInteger.TWO);
             n = n.divide(BigInteger.TWO);
         }
 
-        for (BigInteger i = BigInteger.valueOf(3);
-             i.compareTo(n.sqrt()) <= 0;
-             i = i.add(BigInteger.TWO)) {
+        for (BigInteger i = BigInteger.valueOf(3); i.compareTo(n.sqrt()) <= 0; i = i.add(BigInteger.TWO)) {
             while (n.mod(i).equals(BigInteger.ZERO)) {
                 s.add(i);
                 n = n.divide(i);
@@ -109,31 +184,4 @@ public class ElGamal {
             s.add(n);
         }
     }
-
-    // Function to find the smallest primitive root of n
-    private static BigInteger primitiveRootOf(BigInteger number) {
-        HashSet<BigInteger> s = new HashSet<>();
-        if (!number.isProbablePrime(100)) {
-            return BigInteger.valueOf(-1);
-        }
-
-        BigInteger phi = number.subtract(BigInteger.ONE);
-        findPrimeFactors(s, phi);
-
-        for (BigInteger r = BigInteger.TWO; r.compareTo(phi) <= 0; r = r.add(BigInteger.ONE)) {
-            boolean flag = false;
-            for (BigInteger a : s) {
-                if (r.modPow(phi.divide(a), number).equals(BigInteger.ONE)) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) {
-                return r;
-            }
-        }
-
-        return BigInteger.valueOf(-1);
-    }
-
 }
