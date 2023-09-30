@@ -1,30 +1,30 @@
-package org.example;
+package org.example.task1;
 
 public class Exponent {
     public static void main(String[] args) {
 
-        // x^c mod n
-        final int x = 5981;
-        final int c = 3491;
-        final int n = 9127;
+        // a^b mod m
+        final int a = 7342;
+        final int b = 6543;
+        final int m = 10234;
 
-        final int z = exponentModulo(x, c, n);
+        final int result = computeModularExponent(a, b, m);
 
-        System.out.printf("%d ^ %d mod %d = %d\n", x, c, n, z);
+        System.out.printf("%d ^ %d mod %d = %d\n", a, b, m, result);
     }
 
-    public static int exponentModulo(final int x, final int c, final int n) {
+    public static int computeModularExponent(final int base, final int exponent, final int mod) {
 
-        final String binaryExp = Integer.toBinaryString(c);
+        String binaryExp = Integer.toBinaryString(exponent);
 
-        int z = 1;
+        int res = 1;
         for (int i = 0; i < binaryExp.length(); i++) {
-            z = z * z % n;
+            res = (res * res) % mod;
             if (binaryExp.charAt(i) == '1') {
-                z = z * x % n;
+                res = (res * base) % mod;
             }
         }
 
-        return z;
+        return res;
     }
 }

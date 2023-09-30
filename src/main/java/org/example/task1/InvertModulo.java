@@ -1,45 +1,46 @@
-package org.example;
+package org.example.task1;
 
 public class InvertModulo {
     public static void main(String[] args) {
-        final int b = 8431;
-        final int n = 2753;
+        final int a = 4127;
+        final int m = 1303;
+
+        // Before calling computeModularInverse, check if a and m are valid.
+        if (a <= 0 || m <= 0) {
+            throw new IllegalArgumentException("Invalid values: a and m should be positive.");
+        }
 
         try {
-            final int t = invertModulo(b, n);
-            System.out.println(b + "^(-1) mod " + n + " = " + t);
-        } catch (Exception e) {
-            System.out.println("No result");
+            final int inv = computeModularInverse(a, m);
+            System.out.println(a + "^(-1) mod " + m + " = " + inv);
+        } catch (ArithmeticException e) {
+            System.out.println("No modular inverse exists.");
         }
     }
+    public static int computeModularInverse(int a, int m) {
+        int m0 = m;
+        int y = 0, x = 1;
 
-    public static int invertModulo(int b, int n) throws Exception {
-        int n0 = n;
-        int b0 = b;
-        int t0 = 0;
-        int t = 1;
+        if (m == 1)
+            return 0;
 
-        int q = n0 / b0;
-        int r = n0 - q * b0;
+        while (a > 1) {
+            if (m == 0) throw new ArithmeticException("Modulus cannot be zero");
+            int quotient = a / m;
+            int t = m;
 
-        int temp;
-        while (r > 0) {
-            temp = t0 - q * t;
-            temp = (temp >= 0) ? temp % n : n - (-temp % n);
+            m = a % m;
+            a = t;
+            t = y;
 
-            n0 = b0;
-            b0 = r;
-            t0 = t;
-            t = temp;
-
-            q = n0 / b0;
-            r = n0 - q * b0;
+            y = x - quotient * y;
+            x = t;
         }
 
-        if (b0 != 1) {
-            throw new Exception("No result");
-        }
+        if (x < 0)
+            x += m0;
 
-        return t;
+        return x;
     }
+
 }
