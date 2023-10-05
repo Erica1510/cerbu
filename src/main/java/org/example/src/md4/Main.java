@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Main {
 
-    static String message = "PVMyMessage!1234";
+    static String message = "EDMyMessage!1234";
     static String report_file = "report.txt";
 
     //sum modulo 2 ^ 32
