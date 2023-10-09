@@ -11,10 +11,10 @@ public class TEA {
     public static void main(String[] args) {
         System.out.println("δ = " + DELTA);
 
-        final String[] keyStrings = {"Ru", "Ro", "so", "ft"};
+        final String[] keyStrings = {"deli", "avra", "teun", "ivel"};
         System.out.println("Keys: " + Arrays.toString(keyStrings));
 
-        final String message = "Lime";
+        final String message = "ericadia";
         System.out.println("Message: " + message);
 
         List<String> binaryMessageList = toBinaryStringList(message);
@@ -41,27 +41,61 @@ public class TEA {
 
         int currentDelta = 0;
 
-        for (int j = 0; j < leftInt.length; j++) {
-            for (int i = 0; i < 32; ++i) {
-                currentDelta += DELTA;
-                leftInt[j] += ((rightInt[j] << 4) + keyInts[0]) ^ (rightInt[j] + currentDelta) ^ ((rightInt[j] >> 5) + keyInts[1]);
-                rightInt[j] += ((leftInt[j] << 4) + keyInts[2]) ^ (leftInt[j] + currentDelta) ^ ((leftInt[j] >> 5) + keyInts[3]);
-            }
-        }
+//        for (int j = 0; j < leftInt.length; j++) {
+//            for (int i = 0; i < 32; ++i) {
+//                currentDelta += DELTA;
+//                leftInt[j] += ((rightInt[j] << 4) + keyInts[0]) ^ (rightInt[j] + currentDelta) ^ ((rightInt[j] >> 5) + keyInts[1]);
+//                rightInt[j] += ((leftInt[j] << 4) + keyInts[2]) ^ (leftInt[j] + currentDelta) ^ ((leftInt[j] >> 5) + keyInts[3]);
+//            }
+//        }
 
-//        currentDelta += DELTA;
-//        System.out.println(toBinaryString(rightInt[0] << 4));
-//        System.out.println(toBinaryString((rightInt[0] << 4) + keyInts[0]));
-//        System.out.println(toBinaryString(rightInt[0] + currentDelta));
-//        System.out.println(toBinaryString(((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta)));
-//        System.out.println(toBinaryString(rightInt[0] >> 5));
-//        System.out.println(toBinaryString((rightInt[0] >> 5) + keyInts[1]));
-//        System.out.println(toBinaryString(((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1])));
-//        System.out.println(toBinaryString(leftInt[0] + (((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1]))));
-//
-//        leftInt[0] += ((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1]);
-//        rightInt[0] += ((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]);
-//        System.out.println(toBinaryString(leftInt[0]) + toBinaryString(rightInt[0]));
+//        currentDelta = encrypt(leftInt, rightInt, keyInts, currentDelta);
+
+        currentDelta += DELTA;
+        System.out.println(toBinaryString(rightInt[0] << 4));
+        System.out.println(toBinaryString((rightInt[0] << 4) + keyInts[0]));
+        System.out.println(toBinaryString(rightInt[0] + currentDelta));
+        System.out.println(toBinaryString(((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta)));
+        System.out.println(toBinaryString(rightInt[0] >> 5));
+        System.out.println(toBinaryString((rightInt[0] >> 5) + keyInts[1]));
+        System.out.println(toBinaryString(((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1])));
+        System.out.println(toBinaryString(leftInt[0] + (((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1]))));
+
+        leftInt[0] += ((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1]);
+
+        System.out.println("1: right << 4\n" + toBinaryString(leftInt[0]) + " << 4");
+        System.out.println(toBinaryString(leftInt[0] << 4) + "\n");
+
+        System.out.println("2: ((1) + K2) mod 2^32\n" + toBinaryString(leftInt[0] << 4) + " + ");
+        System.out.println(toBinaryString(keyInts[2]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] << 4) + keyInts[2]) + "\n");
+
+        System.out.println("3: (right + DELTA) mod 2^32\n" + toBinaryString(leftInt[0]) + " + ");
+        System.out.println(toBinaryString(DELTA) + " = ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + "\n");
+
+        System.out.println("4: (2) xor (3)\n" + toBinaryString((leftInt[0] << 4) + keyInts[2]) + " xor ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + "\n");
+
+        System.out.println("5: right >> 5\n" + toBinaryString(leftInt[0]) + " >> 5");
+        System.out.println(toBinaryString(leftInt[0] >>5) + "\n");
+
+        System.out.println("6: ((5) + K3) mod 2^32\n" + toBinaryString(leftInt[0] >> 5) + " + ");
+        System.out.println(toBinaryString(keyInts[3]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + "\n");
+
+        System.out.println("7: (4) xor (6)\n" + toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + " xor ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA) ^ ((leftInt[0] >> 5) + keyInts[3])) + "\n");
+
+        System.out.println("8: (left + (7)) mod 2^32\n" + toBinaryString(rightInt[0]) + " + ");
+        System.out.println(toBinaryString((((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + " = ");
+        System.out.println(toBinaryString(rightInt[0] + (((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + "\n");
+
+        rightInt[0] += ((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]);
+
+        System.out.println(toBinaryString(leftInt[0]) + toBinaryString(rightInt[0]));
 
         long[] result = new long[leftInt.length];
         for (int i = 0; i < result.length; i++) {
@@ -80,9 +114,78 @@ public class TEA {
 
         System.out.println();
 
+        System.out.println("1: right << 4\n" + toBinaryString(leftInt[0]) + " << 4");
+        System.out.println(toBinaryString(leftInt[0] << 4) + "\n");
+
+        System.out.println("2: ((1) + K2) mod 2^32\n" + toBinaryString(leftInt[0] << 4) + " + ");
+        System.out.println(toBinaryString(keyInts[2]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] << 4) + keyInts[2]) + "\n");
+
+        System.out.println("3: (right + DELTA) mod 2^32\n" + toBinaryString(leftInt[0]) + " + ");
+        System.out.println(toBinaryString(DELTA) + " = ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + "\n");
+
+        System.out.println("4: (2) xor (3)\n" + toBinaryString((leftInt[0] << 4) + keyInts[2]) + " xor ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + "\n");
+
+        System.out.println("5: right >> 5\n" + toBinaryString(leftInt[0]) + " >> 5");
+        System.out.println(toBinaryString(leftInt[0] >>5) + "\n");
+
+        System.out.println("6: ((5) + K3) mod 2^32\n" + toBinaryString(leftInt[0] >> 5) + " + ");
+        System.out.println(toBinaryString(keyInts[3]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + "\n");
+
+        System.out.println("7: (4) xor (6)\n" + toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + " xor ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA) ^ ((leftInt[0] >> 5) + keyInts[3])) + "\n");
+
+        System.out.println("8: (left - (7)) mod 2^32\n" + toBinaryString(rightInt[0]) + " - ");
+        System.out.println(toBinaryString((((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + " = ");
+        System.out.println(toBinaryString(rightInt[0] - (((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + "\n");
+
+        rightInt[0] -= ((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]);
+
+        System.out.println("1: right << 4\n" + toBinaryString(leftInt[0]) + " << 4");
+        System.out.println(toBinaryString(leftInt[0] << 4) + "\n");
+
+        System.out.println("2: ((1) + K2) mod 2^32\n" + toBinaryString(leftInt[0] << 4) + " + ");
+        System.out.println(toBinaryString(keyInts[2]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] << 4) + keyInts[2]) + "\n");
+
+        System.out.println("3: (right + DELTA) mod 2^32\n" + toBinaryString(leftInt[0]) + " + ");
+        System.out.println(toBinaryString(DELTA) + " = ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + "\n");
+
+        System.out.println("4: (2) xor (3)\n" + toBinaryString((leftInt[0] << 4) + keyInts[2]) + " xor ");
+        System.out.println(toBinaryString(leftInt[0] + DELTA) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + "\n");
+
+        System.out.println("5: right >> 5\n" + toBinaryString(leftInt[0]) + " >> 5");
+        System.out.println(toBinaryString(leftInt[0] >>5) + "\n");
+
+        System.out.println("6: ((5) + K3) mod 2^32\n" + toBinaryString(leftInt[0] >> 5) + " + ");
+        System.out.println(toBinaryString(keyInts[3]) + " = ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + "\n");
+
+        System.out.println("7: (4) xor (6)\n" + toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA)) + " xor ");
+        System.out.println(toBinaryString((leftInt[0] >> 5) + keyInts[3]) + " = ");
+        System.out.println(toBinaryString(((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + DELTA) ^ ((leftInt[0] >> 5) + keyInts[3])) + "\n");
+
+        System.out.println("8: (left - (7)) mod 2^32\n" + toBinaryString(rightInt[0]) + " - ");
+        System.out.println(toBinaryString((((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + " = ");
+        System.out.println(toBinaryString(rightInt[0] - (((leftInt[0] << 4) + keyInts[2]) ^ (leftInt[0] + currentDelta) ^ ((leftInt[0] >> 5) + keyInts[3]))) + "\n");
+
+        leftInt[0] -= ((rightInt[0] << 4) + keyInts[0]) ^ (rightInt[0] + currentDelta) ^ ((rightInt[0] >> 5) + keyInts[1]);
+        currentDelta -= DELTA;
+
+
+
+
+
 
         System.out.println("Decryption:");
-        decrypt(leftInt, rightInt, keyInts, currentDelta);
+//        currentDelta = decrypt(leftInt, rightInt, keyInts, currentDelta);
         for (int i : leftInt) {
             System.out.print(toBinaryString(i));
         }
@@ -108,7 +211,7 @@ public class TEA {
 
     public static List<String> toBinaryStringList(String message) {
         return message.chars()
-                .mapToObj(symbol -> String.format("%16s", Integer.toBinaryString(symbol))
+                .mapToObj(symbol -> String.format("%8s", Integer.toBinaryString(symbol))
                         .replace(" ", "0")
                 )
                 .toList();
@@ -117,7 +220,7 @@ public class TEA {
     public static String toBinaryString(String message) {
         return message.chars()
                 .mapToObj(
-                        symbol -> String.format("%16s", Integer.toBinaryString(symbol))
+                        symbol -> String.format("%8s", Integer.toBinaryString(symbol))
                                 .replace(" ", "0")
                 )
                 .collect(Collectors.joining(" "));
@@ -126,23 +229,23 @@ public class TEA {
     public static String toBinaryString(long number) {
         return String.format("%64s", Long.toBinaryString(number))
                 .replace(" ", "0")
-                .replaceAll("(.{16})", " $1");
+                .replaceAll("(.{8})", " $1");
     }
 
     public static String toBinaryString(int number) {
         return String.format("%32s", Integer.toBinaryString(number))
                 .replace(" ", "0")
-                .replaceAll("(.{16})", " $1");
+                .replaceAll("(.{8})", " $1");
     }
 
     public static String longToString(long value) {
-        // create a char array of size 4
-        char[] chars = new char[4];
+        // create a char array of size 8
+        char[] chars = new char[8];
 
         // loop through the array and assign each char with 16 bits of the long value
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 8; i++) {
             // use bit shifting and masking to get the 16 bits at the i-th position
-            chars[chars.length - i - 1] = (char) ((value >>> (i * 16)) & 0xFFFF);
+            chars[chars.length - i - 1] = (char) ((value >>> (i * 8)) & 0xFFFF);
         }
 
         // return a new string from the char array
@@ -151,12 +254,12 @@ public class TEA {
 
     public static String intToString(int value) {
         // create a char array of size 4
-        char[] chars = new char[2];
+        char[] chars = new char[4];
 
-        // loop through the array and assign each char with 16 bits of the long value
-        for (int i = 0; i < 2; i++) {
-            // use bit shifting and masking to get the 16 bits at the i-th position
-            chars[chars.length - i - 1] = (char) ((value >>> (i * 16)) & 0xFFFF);
+        // loop through the array and assign each char with 8 bits of the long value
+        for (int i = 0; i < 4; i++) {
+            // use bit shifting and masking to get the 8 bits at the i-th position
+            chars[chars.length - i - 1] = (char) ((value >>> (i * 8)) & 0xFF);
         }
 
         // return a new string from the char array
@@ -168,36 +271,55 @@ public class TEA {
     }
 
     public static int[] getIntsFromString(String word) {
-        if (word == null || word.length() > 4 || word.isEmpty()) {
+        if (word == null || word.length() > 8 || word.isEmpty()) {
             throw new IllegalArgumentException(word);
         }
 
-        final int arraySize = (word.length() % 2 == 1) ?
-                word.length() / 2 + 1 :
-                word.length() / 2;
+        final int remainingSymbols = word.length() % 4;
+
+        final int arraySize = (remainingSymbols != 0) ?
+                word.length() / 4 + 1 :
+                word.length() / 4;
 
         int[] result = new int[arraySize];
-        for (int i = 0; i < word.length() - 1; i += 2) {
-            result[i] = (word.charAt(i) << 16) | word.charAt(i + 1);
+        for (int j = 0, i = 0; j < arraySize && i < word.length() - 1; j++, i += 4) {
+            result[j] = (word.charAt(i) << 24) |
+                    (word.charAt(i + 1) << 16) |
+                    (word.charAt(i + 2) << 8) |
+                    word.charAt(i + 3);
         }
 
-        if (word.length() % 2 == 1) {
-            result[word.length() / 2] = word.charAt(word.length() - 2) << 16;
+        for (int i = 0; i < remainingSymbols; i++) {
+            result[arraySize - 1] = result[arraySize - 1] << 8 | word.charAt(word.length() - remainingSymbols);
         }
 
         return result;
     }
 
 
-    public static void decrypt(int[] leftInt, int[] rightInt, int[] k, int sum) {
+    public static int encrypt(int[] leftInt, int[] rightInt, int[] keyInts, int currentDelta) {
+        for (int j = 0; j < leftInt.length; j++) {
+            for (int i = 0; i < 32; ++i) {
+                currentDelta += DELTA;
+                leftInt[j] += ((rightInt[j] << 4) + keyInts[0]) ^ (rightInt[j] + currentDelta) ^ ((rightInt[j] >> 5) + keyInts[1]);
+                rightInt[j] += ((leftInt[j] << 4) + keyInts[2]) ^ (leftInt[j] + currentDelta) ^ ((leftInt[j] >> 5) + keyInts[3]);
+            }
+        }
+        return currentDelta;
+    }
+
+
+    public static int decrypt(int[] leftInt, int[] rightInt, int[] k, int currentDelta) {
         int k0 = k[0], k1 = k[1], k2 = k[2], k3 = k[3];   /* cache key */
 
         for (int j = 0; j < leftInt.length; j++) {
             for (int i = 0; i < 32; i++) {                         /* basic cycle start */
-                rightInt[j] -= ((leftInt[j] << 4) + k2) ^ (leftInt[j] + sum) ^ ((leftInt[j] >> 5) + k3);
-                leftInt[j] -= ((rightInt[j] << 4) + k0) ^ (rightInt[j] + sum) ^ ((rightInt[j] >> 5) + k1);
-                sum -= DELTA;
+                rightInt[j] -= ((leftInt[j] << 4) + k2) ^ (leftInt[j] + currentDelta) ^ ((leftInt[j] >> 5) + k3);
+                leftInt[j] -= ((rightInt[j] << 4) + k0) ^ (rightInt[j] + currentDelta) ^ ((rightInt[j] >> 5) + k1);
+                currentDelta -= DELTA;
             }
         }
+
+        return currentDelta;
     }
 }
